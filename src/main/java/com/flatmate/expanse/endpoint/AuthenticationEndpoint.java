@@ -9,11 +9,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.flatmate.expanse.dao.AuthenticationDao;
+import com.flatmate.expanse.dao.CommonFlatmateAndAuthenticateDao;
 import com.flatmate.expanse.dto.AuthenticationDto;
 import com.flatmate.expanse.exception.AuthenticateException;
 import com.flatmate.expanse.password.PasswordUtils;
-import com.flatmate.expanse.service.AuthenticationService;
-import com.flatmate.expanse.service.CommonFlatmateAndAuthenticateService;
 import com.flatmate.expanse.tokengenerator.SecureTokenGenerator;
 
 @RestController
@@ -21,10 +21,10 @@ import com.flatmate.expanse.tokengenerator.SecureTokenGenerator;
 public class AuthenticationEndpoint {
 
 	@Autowired
-	private CommonFlatmateAndAuthenticateService commonFlatmateAndAuthenticateService;
+	private CommonFlatmateAndAuthenticateDao commonFlatmateAndAuthenticateDao;
 	
 	@Autowired
-	private AuthenticationService authenticationService;
+	private AuthenticationDao authenticationDao;
 
 	@Value("${authenticate.salt}")
 	private String salt;
@@ -33,11 +33,11 @@ public class AuthenticationEndpoint {
 	public ResponseEntity<?> authenticate(@RequestParam(value = "username", required = true) String userName,
 			@RequestParam(value = "password", required = true) String password) {
 		try {
-			AuthenticationDto authenticationDto = commonFlatmateAndAuthenticateService.getAuthenticate(userName,
+			AuthenticationDto authenticationDto = commonFlatmateAndAuthenticateDao.getAuthenticate(userName,
 					PasswordUtils.generateSecurePassword(password, salt));
 			String accessToken = SecureTokenGenerator.getToken(authenticationDto.getEmail());
 			 
-			Boolean isTokenGenerate = authenticationService.updateAccessTokenAndLastLogin(accessToken,authenticationDto.getAccessToken());
+			Boolean isTokenGenerate = authenticationDao.updateAccessTokenAndLastLogin(accessToken,authenticationDto.getAccessToken());
 			
 			if(isTokenGenerate) {
 				authenticationDto.setAccessToken(accessToken);

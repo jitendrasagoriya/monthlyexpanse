@@ -4,9 +4,15 @@
 package com.flatmate.expanse.endpoint;
 
 import java.sql.Timestamp;
+import java.util.Set;
 
+import javax.validation.ConstraintViolation;
 import javax.validation.Valid;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 
+import org.h2.message.DbException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
@@ -22,12 +28,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.flatmate.expanse.dao.AuthenticationDao;
+import com.flatmate.expanse.dao.FlatmateDao;
 import com.flatmate.expanse.dto.AuthenticationDto;
 import com.flatmate.expanse.model.Authentication;
 import com.flatmate.expanse.model.FlatMate;
 import com.flatmate.expanse.password.PasswordUtils;
-import com.flatmate.expanse.service.AuthenticationService;
-import com.flatmate.expanse.service.FlatmateService;
 import com.flatmate.expanse.tokengenerator.SecureTokenGenerator;
 
 /**
@@ -38,30 +44,33 @@ import com.flatmate.expanse.tokengenerator.SecureTokenGenerator;
 @RequestMapping(path = "/api/flatmate/",produces= {MediaType.APPLICATION_JSON_VALUE,MediaType.APPLICATION_XML_VALUE})
 public class FlatmateEndpoint {
 
+	private ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+	
+	private Validator validator = factory.getValidator();
 	
 	@Value( "${authenticate.salt}" )
 	private String salt;
 	
 	
 	@Autowired
-	private FlatmateService service;
+	private FlatmateDao serviceDao;
 
 	@Autowired
-	private AuthenticationService authenticationService;
+	private AuthenticationDao authenticationDao;
 
 	@GetMapping({ "id" })
 	public ResponseEntity<?> get(@PathVariable Long id) {
-		return new ResponseEntity<>(service.getRepository().findById(id), HttpStatus.OK);
+		return new ResponseEntity<>(serviceDao.getRepository().findById(id), HttpStatus.OK);
 	}
 
 	@GetMapping
 	public ResponseEntity<?> getAll(Pageable pageable) {
-		return new ResponseEntity<>(service.getRepository().findAll(pageable), HttpStatus.OK);
+		return new ResponseEntity<>(serviceDao.getRepository().findAll(pageable), HttpStatus.OK);
 	}
 
 	@PostMapping(path="add/",consumes= {MediaType.APPLICATION_JSON_VALUE,MediaType.APPLICATION_XML_VALUE})
 	public ResponseEntity<?> addFlatmate(@RequestBody @Valid FlatMate flatMate) {
-		return new ResponseEntity<FlatMate>(service.getRepository().save(flatMate), HttpStatus.OK);
+		return new ResponseEntity<FlatMate>(serviceDao.getRepository().save(flatMate), HttpStatus.OK);
 
 	}
 
@@ -74,6 +83,8 @@ public class FlatmateEndpoint {
 		flatMate.setNickName(flatmateDto.getNickName());
 		flatMate.setPhoneNumber(flatmateDto.getPhoneNumber());
 		flatMate.setJoingDate(new Timestamp(System.currentTimeMillis()));
+		
+		
 
 		Authentication authentication = new Authentication();
 		authentication.setAccessToken(SecureTokenGenerator.getToken(flatmateDto.getEmail()));
@@ -81,20 +92,27 @@ public class FlatmateEndpoint {
 		authentication.setPassword( PasswordUtils.generateSecurePassword(flatmateDto.getPassword(), salt) );
 		authentication.setTokenTimeout((long) (30 * 60000));
 		authentication.setUserName(flatmateDto.getEmail());
+		
+		Set<ConstraintViolation<FlatMate>> violations = validator.validate(flatMate);
+		if(! violations.isEmpty()) {
+			return new ResponseEntity<>(violations, HttpStatus.OK);
+		}
 
 		try {
-			flatMate = service.getRepository().save(flatMate);
+			flatMate = serviceDao.getRepository().save(flatMate);
 			if (flatMate.getId() != null) {
 				authentication.setFlatmateId(flatMate.getId());
-				authenticationService.getRepository().save(authentication);
+				authenticationDao.getRepository().save(authentication);
 			}
 
 			AuthenticationDto authenticationDto = new AuthenticationDto(flatMate.getName(),
 					authentication.getAccessToken(), authentication.getTokenTimeout());
 			
 			return new ResponseEntity<AuthenticationDto>(authenticationDto, HttpStatus.OK);
-		} catch (Exception e) {
-			return new ResponseEntity<Exception>(e, HttpStatus.OK);
+		}catch (DbException e) {
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}catch (Exception e) {
+			return new ResponseEntity<Exception>(e, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 		
@@ -103,14 +121,14 @@ public class FlatmateEndpoint {
 
 	@PutMapping(consumes= {MediaType.APPLICATION_JSON_VALUE,MediaType.APPLICATION_XML_VALUE})
 	public ResponseEntity<?> modifyFlatmate(@RequestBody @Valid FlatMate flatMate) {
-		return new ResponseEntity<FlatMate>(service.getRepository().save(flatMate), HttpStatus.OK);
+		return new ResponseEntity<FlatMate>(serviceDao.getRepository().save(flatMate), HttpStatus.OK);
 
 	}
 
 	@DeleteMapping({ "id" })
 	public ResponseEntity<?> modifyFlatmate(@PathVariable Long id) {
 		try {
-			service.getRepository().deleteById(id);
+			serviceDao.getRepository().deleteById(id);
 			return new ResponseEntity<Boolean>(Boolean.TRUE, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<Exception>(e, HttpStatus.INTERNAL_SERVER_ERROR);

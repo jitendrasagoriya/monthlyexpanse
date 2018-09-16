@@ -13,7 +13,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 
 /**
@@ -34,17 +36,20 @@ public class FlatMate implements Serializable {
 	@NotNull
 	private String Name;
 	
-	@Column(name="NICKNAME")
+	@Column(name="NICKNAME",unique = true,length=20)
 	@NotNull
+	@Size(min=5,max=20,message="Nick name should to between 5 to 10")
 	private String nickName;
 	
 	
-	@Column(name="EMAIL")
+	@Column(name="EMAIL",unique = true)
 	@NotNull
+	@Email(message="Email is not valid")
 	private String email;
 	
 	@Column(name="PHONE")
 	@NotNull
+	@Size(min=10,max=10,message="Mobile number should be 10 digits.")
 	private String phoneNumber;
 	
 	

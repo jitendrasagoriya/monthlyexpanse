@@ -5,18 +5,16 @@ import java.sql.Timestamp;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.ServletRequestUtils;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
+import com.flatmate.expanse.dao.AuthenticationDao;
 import com.flatmate.expanse.model.Authentication;
-import com.flatmate.expanse.service.AuthenticationService;
 
 @Component
 public class AuthenticatorInterceptor extends HandlerInterceptorAdapter {
@@ -24,7 +22,7 @@ public class AuthenticatorInterceptor extends HandlerInterceptorAdapter {
 	private static final Logger logger = LoggerFactory.getLogger(AuthenticatorInterceptor.class);
 	
 	@Autowired
-	private AuthenticationService authenticationService;
+	private AuthenticationDao authenticationDao;
 
 	/**
 	 * This is not a good practice to use sysout. Always integrate any logger with
@@ -57,7 +55,7 @@ public class AuthenticatorInterceptor extends HandlerInterceptorAdapter {
 		}
 		
 		/*****************************CHECK AUTHENTICTION*************************************/
-		Authentication authentication = authenticationService.getAuthentication(accessToken);
+		Authentication authentication = authenticationDao.getAuthentication(accessToken);
 		 	 
 		if(logger.isDebugEnabled()) logger.debug("isAuthenticate :"+ (authentication==null));
 		if( authentication == null) {
