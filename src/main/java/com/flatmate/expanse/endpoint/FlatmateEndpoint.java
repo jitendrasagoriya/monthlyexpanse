@@ -8,6 +8,7 @@ import java.sql.Timestamp;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.flatmate.expanse.dto.AuthenticationDto;
 import com.flatmate.expanse.model.Authentication;
 import com.flatmate.expanse.model.FlatMate;
+import com.flatmate.expanse.password.PasswordUtils;
 import com.flatmate.expanse.service.AuthenticationService;
 import com.flatmate.expanse.service.FlatmateService;
 import com.flatmate.expanse.tokengenerator.SecureTokenGenerator;
@@ -36,6 +38,11 @@ import com.flatmate.expanse.tokengenerator.SecureTokenGenerator;
 @RequestMapping(path = "/api/flatmate/",produces= {MediaType.APPLICATION_JSON_VALUE,MediaType.APPLICATION_XML_VALUE})
 public class FlatmateEndpoint {
 
+	
+	@Value( "${authenticate.salt}" )
+	private String salt;
+	
+	
 	@Autowired
 	private FlatmateService service;
 
@@ -71,7 +78,7 @@ public class FlatmateEndpoint {
 		Authentication authentication = new Authentication();
 		authentication.setAccessToken(SecureTokenGenerator.getToken(flatmateDto.getEmail()));
 		authentication.setLastLogin(new Timestamp(System.currentTimeMillis()));
-		authentication.setPassword(flatmateDto.getPassword());
+		authentication.setPassword( PasswordUtils.generateSecurePassword(flatmateDto.getPassword(), salt) );
 		authentication.setTokenTimeout((long) (30 * 60000));
 		authentication.setUserName(flatmateDto.getEmail());
 

@@ -7,6 +7,8 @@ public class AuthenticationDto {
 	private String accessToken;
 	
 	private Long timeout;
+	
+	private String email;
 
 	/**
 	 * 
@@ -25,6 +27,20 @@ public class AuthenticationDto {
 		this.flatmate = flatmate;
 		this.accessToken = accessToken;
 		this.timeout = timeout;
+	}
+
+	/**
+	 * @param flatmate
+	 * @param accessToken
+	 * @param timeout
+	 * @param email
+	 */
+	public AuthenticationDto(String flatmate, String accessToken, Long timeout, String email) {
+		super();
+		this.flatmate = flatmate;
+		this.accessToken = accessToken;
+		this.timeout = timeout;
+		this.email = email;
 	}
 
 	public String getFlatmate() {
@@ -56,6 +72,7 @@ public class AuthenticationDto {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((accessToken == null) ? 0 : accessToken.hashCode());
+		result = prime * result + ((email == null) ? 0 : email.hashCode());
 		result = prime * result + ((flatmate == null) ? 0 : flatmate.hashCode());
 		result = prime * result + ((timeout == null) ? 0 : timeout.hashCode());
 		return result;
@@ -75,6 +92,11 @@ public class AuthenticationDto {
 				return false;
 		} else if (!accessToken.equals(other.accessToken))
 			return false;
+		if (email == null) {
+			if (other.email != null)
+				return false;
+		} else if (!email.equals(other.email))
+			return false;
 		if (flatmate == null) {
 			if (other.flatmate != null)
 				return false;
@@ -88,10 +110,18 @@ public class AuthenticationDto {
 		return true;
 	}
 
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
 	@Override
 	public String toString() {
 		return "AuthenticationDto [flatmate=" + flatmate + ", accessToken=" + accessToken + ", timeout=" + timeout
-				+ "]";
+				+ ", email=" + email + "]";
 	}
 	
 	
