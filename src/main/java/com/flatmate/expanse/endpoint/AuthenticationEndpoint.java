@@ -14,6 +14,8 @@ import com.flatmate.expanse.dao.CommonFlatmateAndAuthenticateDao;
 import com.flatmate.expanse.dto.AuthenticationDto;
 import com.flatmate.expanse.exception.AuthenticateException;
 import com.flatmate.expanse.password.PasswordUtils;
+import com.flatmate.expanse.service.AuthenticationService;
+import com.flatmate.expanse.service.CommonFlatmateAndAuthenticateService;
 import com.flatmate.expanse.tokengenerator.SecureTokenGenerator;
 
 @RestController
@@ -21,10 +23,10 @@ import com.flatmate.expanse.tokengenerator.SecureTokenGenerator;
 public class AuthenticationEndpoint {
 
 	@Autowired
-	private CommonFlatmateAndAuthenticateDao commonFlatmateAndAuthenticateDao;
+	private CommonFlatmateAndAuthenticateService commonFlatmateAndAuthenticateService;
 	
 	@Autowired
-	private AuthenticationDao authenticationDao;
+	private AuthenticationService authenticationService;
 
 	@Value("${authenticate.salt}")
 	private String salt;
@@ -33,11 +35,11 @@ public class AuthenticationEndpoint {
 	public ResponseEntity<?> authenticate(@RequestParam(value = "username", required = true) String userName,
 			@RequestParam(value = "password", required = true) String password) {
 		try {
-			AuthenticationDto authenticationDto = commonFlatmateAndAuthenticateDao.getAuthenticate(userName,
+			AuthenticationDto authenticationDto = commonFlatmateAndAuthenticateService.getAuthenticate(userName,
 					PasswordUtils.generateSecurePassword(password, salt));
 			String accessToken = SecureTokenGenerator.getToken(authenticationDto.getEmail());
 			 
-			Boolean isTokenGenerate = authenticationDao.updateAccessTokenAndLastLogin(accessToken,authenticationDto.getAccessToken());
+			Boolean isTokenGenerate = authenticationService.updateAccessTokenAndLastLogin(accessToken,authenticationDto.getAccessToken());
 			
 			if(isTokenGenerate) {
 				authenticationDto.setAccessToken(accessToken);

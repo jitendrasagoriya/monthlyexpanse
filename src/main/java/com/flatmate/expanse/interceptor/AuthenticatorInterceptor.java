@@ -15,6 +15,7 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import com.flatmate.expanse.dao.AuthenticationDao;
 import com.flatmate.expanse.model.Authentication;
+import com.flatmate.expanse.service.AuthenticationService;
 
 @Component
 public class AuthenticatorInterceptor extends HandlerInterceptorAdapter {
@@ -22,7 +23,7 @@ public class AuthenticatorInterceptor extends HandlerInterceptorAdapter {
 	private static final Logger logger = LoggerFactory.getLogger(AuthenticatorInterceptor.class);
 	
 	@Autowired
-	private AuthenticationDao authenticationDao;
+	private AuthenticationService authenticationService;
 
 	/**
 	 * This is not a good practice to use sysout. Always integrate any logger with
@@ -55,7 +56,7 @@ public class AuthenticatorInterceptor extends HandlerInterceptorAdapter {
 		}
 		
 		/*****************************CHECK AUTHENTICTION*************************************/
-		Authentication authentication = authenticationDao.getAuthentication(accessToken);
+		Authentication authentication = authenticationService.getAuthentication(accessToken);
 		 	 
 		if(logger.isDebugEnabled()) logger.debug("isAuthenticate :"+ (authentication==null));
 		if( authentication == null) {

@@ -34,6 +34,8 @@ import com.flatmate.expanse.dto.AuthenticationDto;
 import com.flatmate.expanse.model.Authentication;
 import com.flatmate.expanse.model.FlatMate;
 import com.flatmate.expanse.password.PasswordUtils;
+import com.flatmate.expanse.service.AuthenticationService;
+import com.flatmate.expanse.service.FlatmateService;
 import com.flatmate.expanse.tokengenerator.SecureTokenGenerator;
 
 /**
@@ -53,24 +55,24 @@ public class FlatmateEndpoint {
 	
 	
 	@Autowired
-	private FlatmateDao serviceDao;
+	private FlatmateService flatmateService;
 
 	@Autowired
-	private AuthenticationDao authenticationDao;
+	private AuthenticationService authenticationService;
 
 	@GetMapping({ "id" })
 	public ResponseEntity<?> get(@PathVariable Long id) {
-		return new ResponseEntity<>(serviceDao.getRepository().findById(id), HttpStatus.OK);
+		return new ResponseEntity<>(flatmateService.findById(id), HttpStatus.OK);
 	}
 
 	@GetMapping
 	public ResponseEntity<?> getAll(Pageable pageable) {
-		return new ResponseEntity<>(serviceDao.getRepository().findAll(pageable), HttpStatus.OK);
+		return new ResponseEntity<>(flatmateService.findAll(pageable), HttpStatus.OK);
 	}
 
 	@PostMapping(path="add/",consumes= {MediaType.APPLICATION_JSON_VALUE,MediaType.APPLICATION_XML_VALUE})
 	public ResponseEntity<?> addFlatmate(@RequestBody @Valid FlatMate flatMate) {
-		return new ResponseEntity<FlatMate>(serviceDao.getRepository().save(flatMate), HttpStatus.OK);
+		return new ResponseEntity<FlatMate>(flatmateService.save(flatMate), HttpStatus.OK);
 
 	}
 
@@ -99,10 +101,10 @@ public class FlatmateEndpoint {
 		}
 
 		try {
-			flatMate = serviceDao.getRepository().save(flatMate);
+			flatMate = flatmateService .save(flatMate);
 			if (flatMate.getId() != null) {
 				authentication.setFlatmateId(flatMate.getId());
-				authenticationDao.getRepository().save(authentication);
+				authenticationService.save(authentication);
 			}
 
 			AuthenticationDto authenticationDto = new AuthenticationDto(flatMate.getName(),
@@ -121,14 +123,14 @@ public class FlatmateEndpoint {
 
 	@PutMapping(consumes= {MediaType.APPLICATION_JSON_VALUE,MediaType.APPLICATION_XML_VALUE})
 	public ResponseEntity<?> modifyFlatmate(@RequestBody @Valid FlatMate flatMate) {
-		return new ResponseEntity<FlatMate>(serviceDao.getRepository().save(flatMate), HttpStatus.OK);
+		return new ResponseEntity<FlatMate>(flatmateService.save(flatMate), HttpStatus.OK);
 
 	}
 
 	@DeleteMapping({ "id" })
 	public ResponseEntity<?> modifyFlatmate(@PathVariable Long id) {
 		try {
-			serviceDao.getRepository().deleteById(id);
+			flatmateService.deleteById(id);
 			return new ResponseEntity<Boolean>(Boolean.TRUE, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<Exception>(e, HttpStatus.INTERNAL_SERVER_ERROR);

@@ -7,6 +7,7 @@ import com.flatmate.expanse.repository.AuthenticationRepository;
 
 @Service
 public interface AuthenticationDao {
+	
 	public AuthenticationRepository getRepository();
 
 	public Boolean checkAuthentication(String accessToken);

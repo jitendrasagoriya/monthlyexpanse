@@ -6,10 +6,10 @@ import org.springframework.stereotype.Service;
 import com.flatmate.expanse.dao.FlatmateDao;
 import com.flatmate.expanse.model.FlatMate;
 import com.flatmate.expanse.repository.FlatMateRepository;
+
 @Service
 public class FlatmateDaoImpl implements FlatmateDao {
 
-	
 	@Autowired
 	private FlatMateRepository repository;
 
