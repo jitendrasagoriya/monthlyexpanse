@@ -63,6 +63,20 @@ public class FlatmateServiceImpl implements FlatmateService {
 		}
 		return Boolean.FALSE;
 	}
+
+	@Override
+	public Boolean checkEmail(String email) {
+		if(getFlatmateByEmailId(email) != null)
+			return Boolean.TRUE;
+		return Boolean.FALSE;
+	}
+
+	@Override
+	public Boolean checkNickname(String nickname) {
+		if(getFlatmateByNickname(nickname) != null)
+			return Boolean.TRUE;
+		return Boolean.FALSE;
+	}
 	
 
 }

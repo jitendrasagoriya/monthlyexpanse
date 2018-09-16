@@ -21,4 +21,8 @@ public interface FlatmateService {
 	public FlatMate getFlatmateByEmailId(String email);
 
 	public FlatMate getFlatmateByNickname(String nickname);
+	
+	public Boolean checkEmail(String email);
+	
+	public Boolean checkNickname(String nickname);
 }
